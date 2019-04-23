@@ -1255,16 +1255,16 @@ class TypoScriptFrontendController
             }
             // The preview flag will be set if a backend user is in an offline workspace
             if (
-                    (
-                        $backendUser->user['workspace_preview']
-                        || GeneralUtility::_GP('ADMCMD_view')
-                        || $this->doWorkspacePreview()
-                    )
-                    && (
-                        $this->whichWorkspace() === -1
-                        || $this->whichWorkspace() > 0
-                    )
-                    && !GeneralUtility::_GP('ADMCMD_noBeUser')
+                (
+                    $backendUser->user['workspace_preview']
+                    || GeneralUtility::_GP('ADMCMD_view')
+                    || $this->doWorkspacePreview()
+                )
+                && (
+                    $this->whichWorkspace() === -1
+                    || $this->whichWorkspace() > 0
+                )
+                && !GeneralUtility::_GP('ADMCMD_noBeUser')
             ) {
                 // Will show special preview message.
                 $this->fePreview = 2;
@@ -1621,7 +1621,7 @@ class TypoScriptFrontendController
                 }
                 break;
             default:
-                $page = $this->sys_page->getPage($idArray[0], $disableGroupCheck);
+                $page = $this->sys_page->getPage($idArray[0], true);
                 if (empty($page)) {
                     $message = 'This page (ID ' . $thisUid . ') is of type "Shortcut" and configured to redirect to a page, which is not accessible (ID ' . $idArray[0] . ').';
                     throw new PageNotFoundException($message, 1301648404);
@@ -1864,9 +1864,9 @@ class TypoScriptFrontendController
             ->getConnectionForTable('pages')
             ->getExpressionBuilder();
         $this->sys_page->where_hid_del = ' AND ' . (string)$expressionBuilder->andX(
-            QueryHelper::stripLogicalOperatorPrefix($this->sys_page->where_hid_del),
-            $expressionBuilder->lt('pages.doktype', 200)
-        );
+                QueryHelper::stripLogicalOperatorPrefix($this->sys_page->where_hid_del),
+                $expressionBuilder->lt('pages.doktype', 200)
+            );
         $this->sys_page->where_groupAccess = $this->sys_page->getMultipleGroupsWhereClause('pages.fe_group', 'pages');
     }
 
@@ -2272,8 +2272,8 @@ class TypoScriptFrontendController
                 $this->releaseLock('pagesection');
             }
             // We keep the lock set, because we are the ones generating the page now
-                // and filling the cache.
-                // This indicates that we have to release the lock in the Registry later in releaseLocks()
+            // and filling the cache.
+            // This indicates that we have to release the lock in the Registry later in releaseLocks()
         }
 
         if (is_array($pageSectionCacheContent)) {
@@ -2309,8 +2309,8 @@ class TypoScriptFrontendController
                         $this->releaseLock('pages');
                     }
                     // We keep the lock set, because we are the ones generating the page now
-                        // and filling the cache.
-                        // This indicates that we have to release the lock in the Registry later in releaseLocks()
+                    // and filling the cache.
+                    // This indicates that we have to release the lock in the Registry later in releaseLocks()
                 }
                 if (is_array($row)) {
                     // we have data from cache
@@ -2942,7 +2942,7 @@ class TypoScriptFrontendController
             $parameter .= ',' . $type;
         }
         $redirectUrl = $cObj->typoLink_URL(['parameter' => $parameter, 'addQueryString' => true,
-            'addQueryString.' => ['exclude' => 'id']]);
+            'addQueryString.' => ['exclude' => 'id'], 'linkAccessRestrictedPages' => true]);
 
         // Prevent redirection loop
         if (!empty($redirectUrl) && GeneralUtility::getIndpEnv('REQUEST_URI') !== '/' . $redirectUrl) {
@@ -3013,7 +3013,7 @@ class TypoScriptFrontendController
                 // Actually $cachedRow contains content that we could show instead of rendering. Maybe we should do that to gain more performance but then we should set all the stuff done in $this->getFromCache()... For now we stick to this...
                 $this->set_no_cache('Another process wrote into the cache since the beginning of the render process', true);
 
-            // Since the new Locking API this should never be the case
+                // Since the new Locking API this should never be the case
             } else {
                 $this->tempContent = true;
                 // This flag shows that temporary content is put in the cache
@@ -4660,13 +4660,13 @@ class TypoScriptFrontendController
                 $timeFields[$field] = $GLOBALS['TCA'][$tableName]['ctrl']['enablecolumns'][$field];
                 $queryBuilder->addSelectLiteral(
                     'MIN('
-                        . 'CASE WHEN '
-                        . $queryBuilder->expr()->lte(
-                            $timeFields[$field],
-                            $queryBuilder->createNamedParameter($now, \PDO::PARAM_INT)
-                        )
-                        . ' THEN NULL ELSE ' . $queryBuilder->quoteIdentifier($timeFields[$field]) . ' END'
-                        . ') AS ' . $queryBuilder->quoteIdentifier($timeFields[$field])
+                    . 'CASE WHEN '
+                    . $queryBuilder->expr()->lte(
+                        $timeFields[$field],
+                        $queryBuilder->createNamedParameter($now, \PDO::PARAM_INT)
+                    )
+                    . ' THEN NULL ELSE ' . $queryBuilder->quoteIdentifier($timeFields[$field]) . ' END'
+                    . ') AS ' . $queryBuilder->quoteIdentifier($timeFields[$field])
                 );
                 $timeConditions->add(
                     $queryBuilder->expr()->gt(
@@ -4786,7 +4786,7 @@ class TypoScriptFrontendController
      *
      * @param int $targetPid Target page id
      * @return mixed Return domain data or NULL
-    */
+     */
     public function getDomainDataForPid($targetPid)
     {
         // Using array_key_exists() here, nice $result can be NULL
